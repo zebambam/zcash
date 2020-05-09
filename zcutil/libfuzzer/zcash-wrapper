@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+
+set -ex -o pipefail
+
+dirs_to_instrument=(
+"^.*\/src$"
+
+)
+
+if [ "$override_dirs_to_instrument" != "" ]
+then
+  dirs_to_instrument= $override_dirs_to_instrument
+fi
+
+# Store the command line we were given to a file
+
+function log {
+  while read line
+  do
+    (echo ; echo "$line") >> "$FUZZER_LOG_DIR/zcash-build-wrapper.log" ; 
+  done
+}
+ 
+echo "`hostname`:`pwd` \$" | log
+echo -- "original command: $0 $@" | log
+
+# Work out which compiler we were called as 
+
+case $0 in
+*zcash-wrapper-clang)
+  COMPILER="clang-7"
+  export DEFINES_FLAGS="${CFLAGS} -DZCASH_FUZZ=1 -DFUZZ_WITH_LIBFUZZER=1"
+  export INSTRUMENT_FLAGS="${DEFINES_FLAGS} -fsanitize=fuzzer,address" 
+  ;;
+*zcash-wrapper-clang++)
+  COMPILER="clang++-7"
+  export DEFINES_FLAGS="${CXXFLAGS} -DZCASH_FUZZ=1 -DFUZZ_WITH_LIBFUZZER=1"
+  export INSTRUMENT_FLAGS="${DEFINES_FLAGS} -fsanitize=fuzzer,address"
+  ;;
+*zcash-wrapper)
+  echo -n "Call this script instead of your regular compiler, and if the absolute "
+  echo -n "path of the CWD the wrapper was called from matches a regex in the "
+  echo -n "array 'dirs_to_instrument', it will instrument the resulting object. "
+  echo -n "Otherwise it will exec directly to the original compiler without "
+  echo    "changing arguments."
+  exit
+  ;;
+esac
+
+# Check if we should instrument
+
+for i in "${dirs_to_instrument[@]}"
+do
+  if echo -- "`pwd`" | grep "$i"; then
+    # We found a match, let's instrument this one.
+    echo "pwd matches dirs_to_instrument array element $i. Adding instrumentation flags..." | log 
+    echo -e -- "\e[92mcommand with defines and instrumentation added:\e[0m" | log 
+    echo -- "$COMPILER" $INSTRUMENT_FLAGS "$@" | log
+    exec -- "$COMPILER" $INSTRUMENT_FLAGS "$@"
+  fi
+done
+
+# No match, just pass-through.
+
+echo -e -- "\e[95mcommand with defines added:\e[0m" | log 
+echo -- "$COMPILER" $DEFINES_FLAGS "$@" | log
+exec -- "$COMPILER" $DEFINES_FLAGS "$@"
+
