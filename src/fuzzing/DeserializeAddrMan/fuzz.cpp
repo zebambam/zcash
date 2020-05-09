@@ -20,14 +20,14 @@ int main (int argc, char *argv[]) {
 #ifdef FUZZ_WITH_LIBFUZZER
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-    CAddrMan addrman;
-    CDataStream ds(Data, Data+Size, SER_DISK, CLIENT_VERSION);
-    try {
-        ds >> addrman;
-    } catch (const std::exception &e) {
-        return 0;
-    }
-    return 0;  // Non-zero return values are reserved for future use.
+  CAddrMan addrman
+  CDataStream ds(Data, Data+Size, 0, 0); // TODO: is this right for type and version? 
+	try {
+		ds >> addrman;
+	} catch (const std::exception &e) {
+		return 0;
+  }
+  return 0;  // Non-zero return values are reserved for future use.
 }
 
 #endif

@@ -1,4 +1,4 @@
-#include <bits/stdc++.h>
+#include<bits/stdc++.h>
 #include <string>
 
 extern bool DecodeHexTx(CTransaction& tx, const std::string& strHexTx);
@@ -30,10 +30,10 @@ int main (int argc, char *argv[]) { return fuzz_DecodeHexTx(argc, argv); }
 // libfuzzer
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-    std::string s;
-    s.assign((const char *)Data, Size);
-    fuzz_DecodeHexTxFunction (s);
-    return 0;  // Non-zero return values are reserved for future use.
+  std::string s;
+  s.assign((const char *)Data, Size);
+  fuzz_DecodeHexTxFunction (s);
+  return 0;  // Non-zero return values are reserved for future use.
 }
 
 #endif

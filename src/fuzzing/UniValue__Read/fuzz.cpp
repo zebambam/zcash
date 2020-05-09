@@ -1,11 +1,10 @@
 #include "univalue.h"
 
 int fuzz_UniValue_Read(std::string notquitejson) {
-    UniValue valRequest;
-    if (!valRequest.read(notquitejson)) {
-        return -1;
-    }
-    return 0;
+  UniValue valRequest;
+  if (!valRequest.read(notquitejson))
+    return -1;
+  return 0;
 }
 
 #ifdef FUZZ_WITH_AFL
@@ -21,9 +20,9 @@ int main (int argc, char *argv[]) {
 #ifdef FUZZ_WITH_LIBFUZZER
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-    std::string s;
-    s.assign((const char *)Data, Size);
-    return fuzz_UniValue_Read(s);
+  std::string s;
+  s.assign((const char *)Data, Size);
+  return fuzz_UniValue_Read(s);
 }
 
 #endif

@@ -3,27 +3,27 @@
 #include "proof_verifier.h"
 
 extern bool CheckBlock(
-    const CBlock& block,
-    CValidationState& state,
-    const CChainParams& chainparams,
-    libzcash::ProofVerifier& verifier,
-    bool fCheckPOW = true,
-    bool fCheckMerkleRoot = true);
+	const CBlock& block, 
+        CValidationState& state, 
+  const CChainParams& chainparams, 
+        libzcash::ProofVerifier& verifier, 
+        bool fCheckPOW = true, 
+        bool fCheckMerkleRoot = true); 
 
 bool init_done = false;
 
-const CChainParams& chainparams = NULL;
+const CChainParams& chainparams = NULL; 
 auto verifier = libzcash::ProofVerifier::Strict();
 
 
 int fuzz_CheckBlock(CBlock block) {
     int retval = 0;
 
-    if (!init_done) {
-        SelectParams(CBaseChainParams::MAIN);
-        chainparams = Params()
-        init_done = true;
-    }
+		if (!init_done) {
+			SelectParams(CBaseChainParams::MAIN);
+			chainparams = Params()
+			init_done = true;
+		}
 
     CValidationState state;
 
@@ -53,15 +53,15 @@ int main (int argc, char *argv[]) {
 #ifdef FUZZ_WITH_LIBFUZZER
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-    CBlock block;
-    CDataStream ds((const char *)Data, (const char *)Data+Size, SER_NETWORK, PROTOCOL_VERSION);
-    try {
-        ds >> block;
-    } catch (const std::exception &e) {
-        return -1;
-    }
-    fuzz_CheckBlock(block);
-    return 0;  // Non-zero return values are reserved for future use.
+	CBlock block;
+  CDataStream ds((const char *)Data, (const char *)Data+Size, 0, 0); // TODO: is this right for type and version? 
+	try {
+		ds >> block;
+	} catch (const std::exception &e) {
+		return -1;
+  }
+  fuzz_CheckBlock(block);
+  return 0;  // Non-zero return values are reserved for future use.
 }
 
 #endif
