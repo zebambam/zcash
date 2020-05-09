@@ -2,6 +2,16 @@
 
 set -ex -o pipefail
 
+#for arg
+#do
+#  shift
+#  [ "$arg" = "-fPIE" ] && continue
+#  [ "$arg" = "-pie" ] && continue
+#  set -- "$@" "$arg"
+#done
+
+#set -- "$@" "-no-pie"
+#set -- "$@" "-Wl,-z,norelro"
 
 instrument=(
 "\/src$"
