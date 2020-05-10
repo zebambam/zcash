@@ -15,7 +15,7 @@ mv x $ZCUTIL/../depends/hosts/linux.mk
 
 cp "./src/fuzzing/$FUZZ_CASE/fuzz.cpp" src/fuzz.cpp
 
-CONFIGURE_FLAGS="--enable-tests=no" "$ZCUTIL/build.sh" -j$(nproc) "CC=$ZCUTIL/libfuzzer/zcash-wrapper-clang" "CXX=$ZCUTIL/libfuzzer/zcash-wrapper-clang++" "$@"
+CONFIGURE_FLAGS="--enable-tests=no --disable-bench" "$ZCUTIL/build.sh" -j$(nproc) "CC=$ZCUTIL/libfuzzer/zcash-wrapper-clang" "CXX=$ZCUTIL/libfuzzer/zcash-wrapper-clang++" "$@"
 
 #echo "You can now run the fuzzer as follows:"
 #echo "$ ./zcutil/libfuzzer/libfuzzer-run.sh '$FUZZ_CASE'"

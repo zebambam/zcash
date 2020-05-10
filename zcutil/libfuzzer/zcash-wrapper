@@ -4,10 +4,15 @@ set -ex -o pipefail
 
 for arg do
   shift
-  if [ "$arg" = "-fPIE" ] // no more pie
+  if [ "$arg" = "-fPIE" ] # no more pie 
   then
    set -- "$@" "-fPIC" "-fno-pie"
    continue
+  fi
+  if [ "$arg" = "-pie" ] 
+  then
+    set -- "$@" "-no-pie"
+    continue
   fi
   set -- "$@" "$arg"
 done
@@ -39,12 +44,12 @@ echo -- "original command: $0 $@" | log
 case $0 in
 *zcash-wrapper-clang)
   COMPILER="clang-7"
-  export DEFINES_FLAGS="${CFLAGS} -DZCASH_FUZZ=1 -DFUZZ_WITH_LIBFUZZER=1"
+  export DEFINES_FLAGS="${CFLAGS} -DZCASH_FUZZ=1 -DFUZZ_WITH_LIBFUZZER=1 -fPIC"
   export INSTRUMENT_FLAGS="${DEFINES_FLAGS} -fsanitize=fuzzer-no-link,address" 
   ;;
 *zcash-wrapper-clang++)
   COMPILER="clang++-7"
-  export DEFINES_FLAGS="${CXXFLAGS} -DZCASH_FUZZ=1 -DFUZZ_WITH_LIBFUZZER=1"
+  export DEFINES_FLAGS="${CXXFLAGS} -DZCASH_FUZZ=1 -DFUZZ_WITH_LIBFUZZER=1 -fPIC"
   export INSTRUMENT_FLAGS="${DEFINES_FLAGS} -fsanitize=fuzzer-no-link,address"
   ;;
 *zcash-wrapper)
@@ -63,7 +68,7 @@ for i in "${dirs_to_instrument[@]}"
 do
   if echo -- "`pwd`" | grep "$i"; then
     # We found a match, let's instrument this one.
-    echo "pwd matches dirs_to_instrument array element $i. Adding instrumentation flags..." | log 
+    echo "pwd (`pwd`) matches dirs_to_instrument array element ($i). Adding instrumentation flags..." | log 
     echo -e -- "\e[92mcommand with defines and instrumentation added:\e[0m" | log 
     echo -- "$COMPILER" $INSTRUMENT_FLAGS "$@" | log
     exec -- "$COMPILER" $INSTRUMENT_FLAGS "$@"
