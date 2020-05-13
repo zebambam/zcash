@@ -2,6 +2,25 @@
 
 set -ex -o pipefail
 
+# logging functions
+
+export green="\e[92m"
+export red="\e[95m"
+export normal="\e[0m"
+
+export color=$normal
+
+function log {
+  while read line
+  do
+    (echo ; echo -e "${color}$line${normal}") >> "$FUZZER_LOG_DIR/zcash-build-wrapper.log" ; 
+  done
+}
+
+# command-line parsing
+
+export FINAL_LINK=0 # by default we using -fsanitize=fuzzer-no-link
+
 for arg do
   shift
   if [ "$arg" = "-fPIE" ] # no more pie 
@@ -14,30 +33,46 @@ for arg do
     set -- "$@" "-no-pie"
     continue
   fi
+  if [ "$arg" = "-o" ] # here an output file is being specified
+  then
+    set -- "$@" "-o"
+    if [ "$1" = "zcashd" ] # here zcashd is the output file
+    then
+      set -- "$@" "zcashd"
+      export FINAL_LINK=1 # we should use -fsanitize=fuzzer
+    fi
+  fi
   set -- "$@" "$arg"
 done
 
-dirs_to_instrument=(
-"^.*\/src$"
+# which source dirs to instrument 
 
-)
-
-if [ "$override_dirs_to_instrument" != "" ]
+if [ "$dirs_to_instrument" = "" ]
 then
-  dirs_to_instrument= $override_dirs_to_instrument
+  export dirs_to_instrument=("^.*\/src$")
 fi
 
 # Store the command line we were given to a file
 
-function log {
-  while read line
-  do
-    (echo ; echo "$line") >> "$FUZZER_LOG_DIR/zcash-build-wrapper.log" ; 
-  done
-}
- 
 echo "`hostname`:`pwd` \$" | log
 echo -- "original command: $0 $@" | log
+
+# decide on a sanitizer option beyond just fuzzing:
+# to link nor not to link libfuzzer we only link on 
+# the final call, to the linker.
+
+if [ "$SANITIZE" = "" ]
+then
+  export SANITIZE="address" # you can override this behavior by setting this environment variable first
+fi
+
+if [ "$FINAL_LINK" = "1" ]
+then
+    export SANITIZE="-fsanitize=fuzzer,$SANITIZE"
+else
+    export SANITIZE="-fsanitize=fuzzer-no-link,$SANITIZE"
+fi
+
 
 # Work out which compiler we were called as 
 
@@ -45,12 +80,12 @@ case $0 in
 *zcash-wrapper-clang)
   COMPILER="clang-7"
   export DEFINES_FLAGS="${CFLAGS} -DZCASH_FUZZ=1 -DFUZZ_WITH_LIBFUZZER=1 -fPIC"
-  export INSTRUMENT_FLAGS="${DEFINES_FLAGS} -fsanitize=fuzzer-no-link,address" 
+  export INSTRUMENT_FLAGS="${DEFINES_FLAGS} ${SANITIZE}" 
   ;;
 *zcash-wrapper-clang++)
   COMPILER="clang++-7"
   export DEFINES_FLAGS="${CXXFLAGS} -DZCASH_FUZZ=1 -DFUZZ_WITH_LIBFUZZER=1 -fPIC"
-  export INSTRUMENT_FLAGS="${DEFINES_FLAGS} -fsanitize=fuzzer-no-link,address"
+  export INSTRUMENT_FLAGS="${DEFINES_FLAGS} ${SANITIZE}"
   ;;
 *zcash-wrapper)
   echo -n "Call this script instead of your regular compiler, and if the absolute "
@@ -58,6 +93,9 @@ case $0 in
   echo -n "array 'dirs_to_instrument', it will instrument the resulting object. "
   echo -n "Otherwise it will exec directly to the original compiler without "
   echo    "changing arguments."
+  echo -n "You can also set SANITIZE to whatever sanitizers you'd like to use."
+  echo -n "the default is 'address'. You don't need the -fsanitize=fuzzer part, "
+  echo    "this script handles that"
   exit
   ;;
 esac
@@ -69,7 +107,7 @@ do
   if echo -- "`pwd`" | grep "$i"; then
     # We found a match, let's instrument this one.
     echo "pwd (`pwd`) matches dirs_to_instrument array element ($i). Adding instrumentation flags..." | log 
-    echo -e -- "\e[92mcommand with defines and instrumentation added:\e[0m" | log 
+    echo "command with defines and instrumentation added:" | color=$green log 
     echo -- "$COMPILER" $INSTRUMENT_FLAGS "$@" | log
     exec -- "$COMPILER" $INSTRUMENT_FLAGS "$@"
   fi
@@ -77,7 +115,7 @@ done
 
 # No match, just pass-through.
 
-echo -e -- "\e[95mcommand with defines added:\e[0m" | log 
+echo -e -- "${red}command with defines added:${normal}" | color=$red log 
 echo -- "$COMPILER" $DEFINES_FLAGS "$@" | log
 exec -- "$COMPILER" $DEFINES_FLAGS "$@"
 
