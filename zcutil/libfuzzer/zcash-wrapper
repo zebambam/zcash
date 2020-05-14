@@ -35,12 +35,11 @@ for arg do
   fi
   if [ "$arg" = "-o" ] # here an output file is being specified
   then
-    set -- "$@" "-o"
     if [ "$1" = "zcashd" ] # here zcashd is the output file
     then
-      set -- "$@" "zcashd"
-      export FINAL_LINK=1 # we should use -fsanitize=fuzzer
+      export FINAL_LINK=1 # we should use -fsanitize=fuzzer because that links libfuzzer
     fi
+    # note no continue, we fall through to default set
   fi
   set -- "$@" "$arg"
 done
