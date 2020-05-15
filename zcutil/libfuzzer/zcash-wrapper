@@ -13,7 +13,7 @@ export color=$normal
 function log {
   while read line
   do
-    (echo ; echo -e "${color}$line${normal}") >> "$FUZZER_LOG_DIR/zcash-build-wrapper.log" ; 
+    (echo ; echo -e "${color}${line}${normal}") >> "$FUZZER_LOG_DIR/zcash-build-wrapper.log" ; 
   done
 }
 
