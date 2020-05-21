@@ -13,9 +13,12 @@ export ZCUTIL=$(realpath "./zcutil")
 cat $ZCUTIL/../depends/hosts/linux.mk | sed -e 's/=gcc/=clang-7/g' | sed -e 's/=g++/=clang++-7/g' > x
 mv x $ZCUTIL/../depends/hosts/linux.mk
 
-cp "./src/fuzzing/$FUZZ_CASE/fuzz.cpp" src/fuzz.cpp
+# don't modify the filesystem if we're only building dependencies
+# this is to optimize docker layers
+
+if [ "$FUZZ_CASE" != "dependsonly" ]
+then
+  cp "./src/fuzzing/$FUZZ_CASE/fuzz.cpp" src/fuzz.cpp
+fi
 
 CONFIGURE_FLAGS="--enable-tests=no --disable-bench" "$ZCUTIL/build.sh" -j$(nproc) "CC=$ZCUTIL/libfuzzer/zcash-wrapper-clang" "CXX=$ZCUTIL/libfuzzer/zcash-wrapper-clang++" "$@"
-
-#echo "You can now run the fuzzer as follows:"
-#echo "$ ./zcutil/libfuzzer/libfuzzer-run.sh '$FUZZ_CASE'"
