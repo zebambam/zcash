@@ -33,7 +33,7 @@ die() {
 POSITIONAL=()
 while [[ $# -gt 0 ]]
 do
-key = "$1"
+key="$1"
 
 case $key in
   -f|--fuzzer)
