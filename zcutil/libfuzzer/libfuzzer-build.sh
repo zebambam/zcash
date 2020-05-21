@@ -16,8 +16,12 @@ mv x $ZCUTIL/../depends/hosts/linux.mk
 # don't modify the filesystem if we're only building dependencies
 # this is to optimize docker layers
 
-if [ "$FUZZ_CASE" != "dependsonly" ]
+if [ "$FUZZ_CASE" = "dependsonly" ]
 then
+  # make an empty fuzz file just so we can build dependencies 
+  > src/fuzz.cpp
+  export BUILD_STAGE=dependsonly
+else
   cp "./src/fuzzing/$FUZZ_CASE/fuzz.cpp" src/fuzz.cpp
 fi
 
