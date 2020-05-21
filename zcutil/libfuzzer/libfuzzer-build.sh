@@ -39,6 +39,10 @@ key="$1"
 case $key in
   -f|--fuzzer)
   FUZZER_NAME="$2"
+  if [ ! -f "./src/fuzzing/$FUZZER_NAME/fuzz.cpp" ]
+  then
+    die "Cannot find source code for fuzzer."
+  fi
   shift
   shift
   ;;
@@ -99,7 +103,7 @@ if [ "${LLVM_SANITIZERS:-undefined}" = "undefined" ]
 then
   export LLVM_SANITIZERS="address"
 fi
-if [ "${INSTRUMENT_CODE:-undefinex}" = "undefined" ]
+if [ "${INSTRUMENT_CODE:-undefined}" = "undefined" ]
 then
   export INSTRUMENT_CODE=("^.*\/src")
 fi
@@ -122,7 +126,7 @@ then
   # make an empty fuzz file just so we can build dependencies 
   > src/fuzz.cpp
 else
-  cp "./src/fuzzing/$FUZZ_CASE/fuzz.cpp" src/fuzz.cpp || die "Can't copy fuzz.cpp for that fuzzer"
+  cp "./src/fuzzing/$FUZZER_NAME/fuzz.cpp" src/fuzz.cpp || die "Can't copy fuzz.cpp for that fuzzer"
 fi
 
 # sneak the variable into zcashd's build.sh
