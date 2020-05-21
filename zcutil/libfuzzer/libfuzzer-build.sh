@@ -64,7 +64,7 @@ done
 
 # positional arguments
 
-if [ "${#POSITIONAL[@]}" != 1 ]
+if [ ${#POSITIONAL[@]} -lt 1 ]
 then
   usage
 else
