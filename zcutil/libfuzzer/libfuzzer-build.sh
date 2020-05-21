@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -eu -o pipefail
+set -x
 
 usage() {
   echo ""
@@ -73,10 +74,10 @@ fi
 
 case "${BUILD_STAGE:-undefined}" in
   depends)
+  FUZZER_NAME=notused
   # fine
   ;;
   fuzzer)
-  FUZZER_NAME=notused
   # fine
   ;;
   *)
