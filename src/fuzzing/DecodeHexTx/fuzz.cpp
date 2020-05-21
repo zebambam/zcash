@@ -1,3 +1,5 @@
+#include<bits/stdc++.h>
+
 extern bool DecodeHexTx(CTransaction& tx, const std::string& strHexTx);
 
 // actual fuzzer
