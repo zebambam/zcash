@@ -29,7 +29,8 @@ int main (int argc, char *argv[]) { return fuzz_DecodeHexTx(argc, argv); }
 // libfuzzer
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-  std::string s(Data);
+  string s = ""
+  for (int i=0; i<Size; i++) s = s+Data[i];
   fuzz_DecodeHexTxFunction (s);
   return 0;  // Non-zero return values are reserved for future use.
 }
