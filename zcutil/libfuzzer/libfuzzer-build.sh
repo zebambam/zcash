@@ -135,4 +135,4 @@ CONFIGURE_FLAGS="--enable-tests=no --disable-bench" \
   "$ZCUTIL/build.sh" \
   -j$(nproc) \
   "CC=$ZCUTIL/libfuzzer/zcash-wrapper-clang" \
-  "CXX=$ZCUTIL/libfuzzer/zcash-wrapper-clang++" "${POSITIONAL[@]:1}" || die "Build failed."
+  "CXX=$ZCUTIL/libfuzzer/zcash-wrapper-clang++" "${POSITIONAL[@]:1}" || die "Build failed at stage $BUILD_STAGE."
