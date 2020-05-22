@@ -53,7 +53,7 @@ int main (int argc, char *argv[]) {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 	CBlock block;
-  CDataStream ds(Data, Data+Size, 0, 0); // TODO: is this right for type and version? 
+  CDataStream ds((const char *)Data, (const char *)Data+Size, 0, 0); // TODO: is this right for type and version? 
 	try {
 		ds >> block;
 	} catch (const std::exception &e) {
