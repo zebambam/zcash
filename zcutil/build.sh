@@ -82,7 +82,7 @@ ld -v
 
 HOST="$HOST" BUILD="$BUILD" WITH_PROTON="$PROTON_ARG" "$MAKE" "$@" -C ./depends/
 
-if [ "${BUILD_STAGE:-all}" = "dependsonly" ]
+if [ "${BUILD_STAGE:-all}" = "depends" ]
 then
   exit 0
 fi
