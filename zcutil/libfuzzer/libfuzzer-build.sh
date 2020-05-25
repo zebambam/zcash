@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 set -eu -o pipefail
-set -x
 
 usage() {
   echo ""
@@ -16,6 +15,7 @@ usage() {
   echo " -f,--fuzzer <fuzzername> (ignored if building \"depends\")"
   echo " [-s,--sanitizers <sanitizers>]"
   echo " [-i,--instrument <instrument>]"
+  echo " [-l,--logfile <logfile>] # default is ./zcash-build-wrapper.log"
   echo " [-h,--help]"
   echo ""
   echo "Where fuzzer is an entry in ./src/fuzzing/*, the default sanitizer"
@@ -53,6 +53,11 @@ case $key in
   ;;
   -i|--instrument)
   INSTRUMENT_CODE="$2"
+  shift
+  shift
+  ;;
+  -l|--logfile)
+  LOGFILE="$2"
   shift
   shift
   ;;
@@ -106,6 +111,10 @@ fi
 if [ "${INSTRUMENT_CODE:-undefined}" = "undefined" ]
 then
   export INSTRUMENT_CODE=("^.*\/src")
+fi
+if [ "${LOGFILE:-undefined}" = "undefined" ]
+then
+  export LOGFILE=./zcash-build-wrapper.log
 fi
 
 set -x
