@@ -22,7 +22,7 @@ int main (int argc, char *argv[]) {
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
   std::string s;
   s.assign((const char *)Data, Size);
-  return fuzz_UniValue_Read(block);
+  return fuzz_UniValue_Read(s);
 }
 
 #endif
