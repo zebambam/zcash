@@ -1,1 +1,1 @@
--dict=./src/fuzzing/ParseMoney/dict -max_len=50
+-max_len=50
