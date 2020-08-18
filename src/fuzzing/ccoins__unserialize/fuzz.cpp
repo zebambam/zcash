@@ -34,7 +34,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
   std::vector<unsigned char> vect(Size);
   memcpy(&vect[0], Data, Size * sizeof(uint8_t));
 
-  success = fuzz_CCoins_Unserialize(vect);
+  success = fuzz_CCoins__Unserialize(vect);
   return 0;  // Non-zero return values are reserved for future use.
 }
 
