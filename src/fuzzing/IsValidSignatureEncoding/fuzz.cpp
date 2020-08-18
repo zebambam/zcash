@@ -14,11 +14,10 @@ int main (int argc, char *argv[]) {
 
 bool result = false;
 
-
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
   std::vector<unsigned char> data;
   data.assign(Data, Data + Size);
-  result = IsValidSignatureEncoding(Data);
+  result = IsValidSignatureEncoding(data);
   return 0;
 }
 
