@@ -1,4 +1,4 @@
-bool static IsValidSignatureEncoding(const std::vector<unsigned char> &); 
+#include "script/interpreter.cpp"
 
 #ifdef FUZZ_WITH_AFL
 
