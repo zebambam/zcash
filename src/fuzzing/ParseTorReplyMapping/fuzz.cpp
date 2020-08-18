@@ -1,4 +1,4 @@
-static std::map<std::string,std::string> ParseTorReplyMapping(const std::string &s)
+#include "torcontrol.cpp"
 
 #ifdef FUZZ_WITH_AFL
 
@@ -12,9 +12,9 @@ int main (int argc, char *argv[]) {
 #endif // FUZZ_WITH_AFL
 #ifdef FUZZ_WITH_LIBFUZZER
 
-size_t length_of_map = 0;
+std::map<std::string, std::string> result;
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
   std::string s;
   s.assign(Data, Data + Size);
   result = ParseTorReplyMapping(s);
