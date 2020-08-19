@@ -22,52 +22,12 @@
 #include <utility>
 #include <vector>
 
-template<typename Stream>
-class OverrideStream
-{
-    Stream* stream;
 
-    const int nType;
-    const int nVersion;
+//#include <typeinfo>
 
-public:
-    OverrideStream(Stream* stream_, int nType_, int nVersion_) : stream(stream_), nType(nType_), nVersion(nVersion_) {}
+#include <boost/type_index.hpp>
 
-    template<typename T>
-    OverrideStream<Stream>& operator<<(const T& obj)
-    {
-        // Serialize to this stream
-        ::Serialize(*this, obj);
-        return (*this);
-    }
-
-    template<typename T>
-    OverrideStream<Stream>& operator>>(T&& obj)
-    {
-        // Unserialize from this stream
-        ::Unserialize(*this, obj);
-        return (*this);
-    }
-
-    void write(const char* pch, size_t nSize)
-    {
-        stream->write(pch, nSize);
-    }
-
-    void read(char* pch, size_t nSize)
-    {
-        stream->read(pch, nSize);
-    }
-
-    int GetVersion() const { return nVersion; }
-    int GetType() const { return nType; }
-};
-
-template<typename S>
-OverrideStream<S> WithVersion(S* s, int nVersion)
-{
-    return OverrideStream<S>(s, s->GetType(), nVersion);
-}
+#include "utilstrencodings.h"
 
 /** Double ended buffer combining vector and stream-like interfaces.
  *
@@ -79,12 +39,12 @@ class CBaseDataStream
 {
 protected:
     typedef SerializeType vector_type;
-    vector_type vch;
     unsigned int nReadPos;
 
     int nType;
     int nVersion;
 public:
+    vector_type vch;
 
     typedef typename vector_type::allocator_type   allocator_type;
     typedef typename vector_type::size_type        size_type;
@@ -343,6 +303,20 @@ public:
     {
         // Unserialize from this stream
         ::Unserialize(*this, obj);
+
+        // This hack has to go in >>, since if it were in << it would infinite loop
+        std::string logmsg = "\nUnserializing a [";
+        //logmsg += typeid(T).name();
+        logmsg += boost::typeindex::type_id<T>().pretty_name();
+        logmsg += "] with value [";
+
+        CBaseDataStream s(0, 0);
+        s << obj;
+        logmsg += EncodeBase64((const unsigned char*)&s.vch[0], s.vch.size());
+
+        logmsg += "]\n";
+        LogPrintf("%s", logmsg);
+        std::cerr << logmsg;
         return (*this);
     }
 
@@ -351,6 +325,74 @@ public:
         clear();
     }
 };
+
+
+template<typename Stream>
+class OverrideStream
+{
+    Stream* stream;
+
+    const int nType;
+    const int nVersion;
+
+public:
+    OverrideStream(Stream* stream_, int nType_, int nVersion_) : stream(stream_), nType(nType_), nVersion(nVersion_) {}
+
+    template<typename T>
+    OverrideStream<Stream>& operator<<(const T& obj)
+    {
+        // Serialize to this stream
+        ::Serialize(*this, obj);
+        return (*this);
+    }
+
+    template<typename T>
+    OverrideStream<Stream>& operator>>(T&& obj)
+    {
+        // Unserialize from this stream
+        ::Unserialize(*this, obj);
+
+        // This hack has to go in >>, since if it were in << it would infinite loop
+        std::string logmsg = "\nIn OverrideStream Unserializing a [";
+        //logmsg += typeid(T).name();
+        logmsg += boost::typeindex::type_id<T>().pretty_name();
+        logmsg += "] with value [";
+
+        CBaseDataStream<CSerializeData> s(0, 0);
+        s << obj;
+        logmsg += EncodeBase64((const unsigned char*)&s.vch[0], s.vch.size());
+
+        logmsg += "]\n";
+        LogPrintf("%s", logmsg);
+        std::cerr << logmsg;
+        return (*this);
+    }
+
+    void write(const char* pch, size_t nSize)
+    {
+        stream->write(pch, nSize);
+    }
+
+    void read(char* pch, size_t nSize)
+    {
+        stream->read(pch, nSize);
+    }
+
+    int GetVersion() const { return nVersion; }
+    int GetType() const { return nType; }
+};
+
+template<typename S>
+OverrideStream<S> WithVersion(S* s, int nVersion)
+{
+    return OverrideStream<S>(s, s->GetType(), nVersion);
+}
+
+
+
+
+
+
 
 class CDataStream : public CBaseDataStream<CSerializeData>
 {
@@ -379,11 +421,6 @@ public:
             CBaseDataStream(nTypeIn, nVersionIn, args...) { }
 
 };
-
-
-
-
-
 
 
 
@@ -494,6 +531,21 @@ public:
         if (!file)
             throw std::ios_base::failure("CAutoFile::operator>>: file handle is NULL");
         ::Unserialize(*this, obj);
+
+        // This hack has to go in >>, since if it were in << it would infinite loop
+        std::string logmsg = "\nIn CAutoFile Unserializing a [";
+        //logmsg += typeid(T).name();
+        logmsg += boost::typeindex::type_id<T>().pretty_name();
+        logmsg += "] with value [";
+
+        CBaseDataStream<CSerializeData> s(0, 0);
+        s << obj;
+        logmsg += EncodeBase64((const unsigned char*)&s.vch[0], s.vch.size());
+
+        logmsg += "]\n";
+        LogPrintf("%s", logmsg);
+        std::cerr << logmsg;
+
         return (*this);
     }
 };
@@ -642,6 +694,20 @@ public:
     CBufferedFile& operator>>(T& obj) {
         // Unserialize from this stream
         ::Unserialize(*this, obj);
+        // This hack has to go in >>, since if it were in << it would infinite loop
+        std::string logmsg = "\nIn CBufferedFile Unserializing a [";
+        //logmsg += typeid(T).name();
+        logmsg += boost::typeindex::type_id<T>().pretty_name();
+        logmsg += "] with value [";
+
+        CBaseDataStream<CSerializeData> s(0, 0);
+        s << obj;
+        logmsg += EncodeBase64((const unsigned char*)&s.vch[0], s.vch.size());
+
+        logmsg += "]\n";
+        LogPrintf("%s", logmsg);
+        std::cerr << logmsg;
+
         return (*this);
     }
 
