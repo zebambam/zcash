@@ -1,0 +1,4 @@
+src:*cxx_db.cpp
+fun:*__db_open_pp*
+[cfi-unrelated-cast|cfi-cast-strict]
+src:*aligned_buffer.h
