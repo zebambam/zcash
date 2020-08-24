@@ -51,7 +51,7 @@ done
 
 if [ "$INSTRUMENT_CODE" = "" ]
 then
-  export dirs_to_instrument=".*"
+  export dirs_to_instrument="^.*"
 else
   export dirs_to_instrument="$INSTRUMENT_CODE"
 fi
@@ -65,16 +65,28 @@ echo -- "original command: $0 $@" | log
 # to link nor not to link libfuzzer we only link on 
 # the final call, to the linker.
 
-if [ "$LLVM_SANITIZERS" = "" ]
+if [ "${LLVM_SANITIZERS:-undefined}" = "undefined" ]
 then
   export LLVM_SANITIZERS="address" # you can override this behavior by setting this environment variable first
 fi
 
-if [ "$FINAL_LINK" = "1" ]
+if [ "${SET_FUZZ_DEFINES:-undefined}" = "true" ]
 then
-    export LLVM_SANITIZE="-fsanitize=fuzzer,$LLVM_SANITIZERS"
+    export FUZZ_DEFINE_FLAGS="-DZCASH_FUZZ=1 -DFUZZ_WITH_LIBFUZZER=1"
+    if [ "$FINAL_LINK" = "1" ]
+    then
+        export LLVM_SANITIZE="-fsanitize=fuzzer,$LLVM_SANITIZERS"
+    else
+        export LLVM_SANITIZE="-fsanitize=fuzzer-no-link,$LLVM_SANITIZERS"
+    fi
 else
-    export LLVM_SANITIZE="-fsanitize=fuzzer-no-link,$LLVM_SANITIZERS"
+    export FUZZ_DEFINE_FLAGS=""
+    if [ "$FINAL_LINK" = "1" ]
+    then
+        export LLVM_SANITIZE="-fsanitize=$LLVM_SANITIZERS"
+    else
+        export LLVM_SANITIZE="-fsanitize=$LLVM_SANITIZERS"
+    fi
 fi
 
 if [ "${ENABLE_COVERAGE_INSTRUMENTATION:-undefined}" == "true" ]
@@ -87,14 +99,14 @@ fi
 # Work out which compiler we were called as 
 
 case $0 in
-*zcash-wrapper-clang)
+*zcash-wrapper-clang|*gcc|*cc)
   COMPILER="clang"
-  export DEFINES_FLAGS="${CFLAGS} -DZCASH_FUZZ=1 -DFUZZ_WITH_LIBFUZZER=1 -fPIC"
+  export DEFINES_FLAGS="${CFLAGS} ${FUZZ_DEFINE_FLAGS} -fPIC"
   export INSTRUMENT_FLAGS="${DEFINES_FLAGS} ${LLVM_COVERAGE} ${LLVM_SANITIZE} -funroll-loops"
   ;;
-*zcash-wrapper-clang++)
+*zcash-wrapper-clang++|*g++|*c++)
   COMPILER="clang++"
-  export DEFINES_FLAGS="${CXXFLAGS} -DZCASH_FUZZ=1 -DFUZZ_WITH_LIBFUZZER=1 -fPIC"
+  export DEFINES_FLAGS="${CXXFLAGS} ${FUZZ_DEFINE_FLAGS} -fPIC"
   export INSTRUMENT_FLAGS="${DEFINES_FLAGS} ${LLVM_COVERAGE} ${LLVM_SANITIZE} -funroll-loops"
   ;;
 *zcash-wrapper)
@@ -106,7 +118,7 @@ case $0 in
   echo -n "You can also set LLVM_SANITIZE to whatever sanitizers you'd like to use."
   echo -n "the default is 'address'. You don't need the -fsanitize=fuzzer part, "
   echo    "this script handles that"
-  exit
+  exit 1
   ;;
 esac
 
@@ -124,7 +136,6 @@ do
 done
 
 # No match, just pass-through.
-
 echo -e -- "${red}command with defines added:${normal}" | color=$red log 
 echo -- "$COMPILER" $DEFINES_FLAGS "$@" | log
 exec -- "$COMPILER" $DEFINES_FLAGS "$@"
