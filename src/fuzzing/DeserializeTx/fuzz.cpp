@@ -1,4 +1,4 @@
-#include <bits/stdc++.h> 
+#include <bits/stdc++.h>
 
 // actual fuzzer
 
@@ -34,11 +34,10 @@ int main (int argc, char *argv[]) { return fuzz_TxDeserialize(argc, argv); }
 // libFuzzer
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-  //return (int) fuzz_TxDeserializeFunction (
-  std::vector<unsigned char> vect(Size);
-  memcpy(&vect[0], Data, Size * sizeof(uint8_t));
-  fuzz_TxDeserializeFunction(vect);
-  return 0;  // Non-zero return values are reserved for future use.
+    std::vector<unsigned char> vect(Size);
+    memcpy(&vect[0], Data, Size * sizeof(uint8_t));
+    fuzz_TxDeserializeFunction(vect);
+    return 0;  // Non-zero return values are reserved for future use.
 }
 
 #endif
