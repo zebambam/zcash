@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -eu -o pipefail
-set -x
+set +x
 
 function cmd_pref() {
     if type -p "$2" > /dev/null; then
