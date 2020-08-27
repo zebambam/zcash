@@ -311,6 +311,8 @@ public:
         logmsg += "] with value [";
 
         CBaseDataStream s(this->GetType(), this->GetVersion());
+        s << this->GetType();
+        s << this->GetVersion();
         s << obj;
         logmsg += EncodeBase64((const unsigned char*)&s.vch[0], s.vch.size());
 
@@ -359,6 +361,8 @@ public:
         logmsg += "] with value [";
 
         CBaseDataStream<CSerializeData> s(this->GetType(), this->GetVersion());
+        s << this->GetType();
+        s << this->GetVersion();
         s << obj;
         logmsg += EncodeBase64((const unsigned char*)&s.vch[0], s.vch.size());
 
@@ -539,6 +543,8 @@ public:
         logmsg += "] with value [";
 
         CBaseDataStream<CSerializeData> s(this->GetType(), this->GetVersion());
+        s << this->GetType();
+        s << this->GetVersion();
         s << obj;
         logmsg += EncodeBase64((const unsigned char*)&s.vch[0], s.vch.size());
 
@@ -700,7 +706,9 @@ public:
         logmsg += boost::typeindex::type_id<T>().pretty_name();
         logmsg += "] with value [";
 
-        CBaseDataStream<CSerializeData> s(0, 0);
+        CBaseDataStream<CSerializeData> s(this->GetType(), this->GetVersion());
+        s << this->GetType();
+        s << this->GetVersion();
         s << obj;
         logmsg += EncodeBase64((const unsigned char*)&s.vch[0], s.vch.size());
 
