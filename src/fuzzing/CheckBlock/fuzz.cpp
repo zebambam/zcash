@@ -21,8 +21,8 @@ int fuzz_CheckBlock(CBlock block) {
 
     if (!init_done) {
         SelectParams(CBaseChainParams::MAIN);
-        chainparams = Params()
-            init_done = true;
+        chainparams = Params();
+        init_done = true;
     }
 
     CValidationState state;

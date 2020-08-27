@@ -20,7 +20,7 @@ int main (int argc, char *argv[]) {
 #ifdef FUZZ_WITH_LIBFUZZER
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-    CAddrMan addrman
+    CAddrMan addrman;
     CDataStream ds(Data, Data+Size, SER_DISK, PROTOCOL_VERSION);
     try {
         ds >> addrman;
