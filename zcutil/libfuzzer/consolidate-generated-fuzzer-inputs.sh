@@ -36,7 +36,7 @@ while read type; do
         echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
         echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
         echo "Testing and consolidating inputs for [$fuzzname]..."
-        ./src/zcashd -merge=1 "./src/fuzzing/$fuzzname/input" "./src/fuzzing/$fuzzname/tmp_all_inputs/"
+        ./src/zcashd -merge=1 -rss_limit_mb=30720 "./src/fuzzing/$fuzzname/input" "./src/fuzzing/$fuzzname/tmp_all_inputs/"
 
         cd src
     else
