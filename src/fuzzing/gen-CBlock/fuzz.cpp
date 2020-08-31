@@ -6,11 +6,15 @@
 bool fuzz_Deserialize (const std::vector<unsigned char> x) {
         // The inputs are actually a container format that beings with two ints,
         // the type and version of the stream used to serialize the object.
-        CDataStream s(x, 0, 0);
         int type;
         int version;
-        s >> type;
-        s >> version;
+        try {
+            CDataStream s(x, 0, 0);
+            s >> type;
+            s >> version;
+        } catch (const std::exception&) {
+            return false;
+        }
 
         CBlock obj;
         CDataStream ssData(x, type, version);
