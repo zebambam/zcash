@@ -4,9 +4,22 @@
 // actual fuzzer
 
 bool fuzz_Deserialize (const std::vector<unsigned char> x) {
+        // The inputs are actually a container format that beings with two ints,
+        // the type and version of the stream used to serialize the object.
+        CDataStream s(x, 0, 0);
+        int type;
+        int version;
+        s >> type;
+        s >> version;
+
         CCoins obj;
-        CDataStream ssData(x, SER_NETWORK, PROTOCOL_VERSION);
+        CDataStream ssData(x, type, version);
         try {
+            // These were already deserialized but we need to do it again
+            // to get to the start of the actual serialized object.
+            ssData >> type;
+            ssData >> version;
+            // Now deserialize the actual object.
             ssData >> obj;
             return true;
         } catch (const std::exception&) {
